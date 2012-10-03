@@ -20,6 +20,9 @@ trait SpringConfigured extends DelayedInit {
 		can put it at the top of the class.
 
 		Hopefully there's a less silly way of ensuring delayedInit runs.
+		Probably the best solution is to wait until we're using Scala 2.10 and
+		then reimplement this whole thing as some kind of macro (just as well
+		as DelayedInit is likely being deprecated in favour of macros)
 	*/
 	def enableConfiguration {}
 
