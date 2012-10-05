@@ -13,8 +13,6 @@ class Beeper {
 }
 
 class MyCommand extends SpringConfigured {
-	enableConfiguration // urgh, silly.
-
 	@Autowired(required=true) var beeper: Beeper = _	
 
 	def makeSomeNoise() {
