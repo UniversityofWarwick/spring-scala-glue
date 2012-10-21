@@ -7,3 +7,17 @@ This is a replacement for the `@Configurable` annotation that normally requires 
 
 See `SpringConfiguredTest` for usage.
 
+New things we could add
+------------
+
+- Replacement for `@Autowired` and `@Resource` annotations on vars - it would be good if instead of
+
+        @Autowired var userLookupService: UserLookupService = _
+        @Resource("dataSource") var dataSource: DataSource = _
+
+  we could have this (the val could optionally be `lazy` in case of dependency cycles)
+
+      val userLookupService = autowired[UserLookupService]
+      val dataSource = wired[DataSource]("cmsDataSource")
+
+- Investigate compatibility with native Scala getters/setters and collections. This is likely to be difficult to do in a library since Spring's BeanWrapperImpl is hardwired to Java style bean properties, and similarly most of Spring assumes all collections to implement interfaces in the Java Collection API.
