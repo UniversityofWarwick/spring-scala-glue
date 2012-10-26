@@ -15,14 +15,6 @@
 
   <bean class="uk.ac.warwick.spring.Beeper" />
 
-  <bean name="myBean" class="uk.ac.warwick.spring.MyDependency">
-    <constructor-arg value="Joe" />
-  </bean>
-
-  <bean name="coolBean" class="uk.ac.warwick.spring.NamedDependency">
-    <constructor-arg value="Roger" />
-  </bean>
-
   <!-- more bean definitions for services go here -->
 
 </beans>

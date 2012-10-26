@@ -1,5 +1,7 @@
-package uk.ac.warwick
+package uk.ac.warwick.spring
 
+import org.springframework.context._
+import org.springframework.beans._
 import org.springframework.beans.factory.wiring.BeanConfigurerSupport
 import org.springframework.beans.factory._
 import org.springframework.beans.factory.annotation._
@@ -12,21 +14,28 @@ trait SpringConfigured {
 	SpringConfigurer.beanConfigurer.configureBean(this)
 }
 
-class SpringConfigurer extends BeanFactoryAware with InitializingBean with DisposableBean {
+class SpringConfigurer extends ApplicationContextAware with InitializingBean with DisposableBean {
 	import SpringConfigurer._
 
-	def setBeanFactory(factory: BeanFactory) {
-		beanConfigurer.setBeanFactory(factory)
-		//beanConfigurer.setBeanWiringInfoResolver(new AnnotationBeanWiringInfoResolver())
+	def setApplicationContext(ctx: ApplicationContext) {
+		applicationContext = ctx
+		ctx match {
+			case ctx: ConfigurableApplicationContext => beanConfigurer.setBeanFactory(ctx.getBeanFactory)
+			case _ => throw new BeanInstantiationException(getClass, "ConfigurableApplicationContext required")
+		}
 	}
+
 	def afterPropertiesSet() {
 		beanConfigurer.afterPropertiesSet()
 	}
+
 	def destroy() {
-		beanConfigurer.destroy()
+		//beanConfigurer.destroy()
+		applicationContext = null
 	}
 }
 
 object SpringConfigurer {
 	var beanConfigurer = new BeanConfigurerSupport
+	var applicationContext: ApplicationContext = null
 }

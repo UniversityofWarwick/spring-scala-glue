@@ -1,4 +1,4 @@
-package uk.ac.warwick
+package uk.ac.warwick.spring
 
 import org.scalatest._
 
@@ -23,12 +23,12 @@ class MyCommand extends SpringConfigured {
 class SpringConfiguredTest extends FunSuite {
 
 	test("SpringConfigured object should obey autowiring") {
-
 		val appCtx = new ClassPathXmlApplicationContext("classpath:/test.xml")
 
   		val cmd = new MyCommand()
 		cmd.makeSomeNoise()
-		
+
+		appCtx.destroy()
 	}
 
 }
