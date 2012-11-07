@@ -1,5 +1,7 @@
 This project is for Spring projects written in Scala. It hopes to define some useful tools to help with doing things in a way that takes advantage of Scala, or wraps things that only really work well in Java projects. It also replaces some AOP-dependant functionality such as @Configurable autowiring.
 
+There's already a more official-looking Spring Scala project and we won't try to duplicate anything they've already done there: https://github.com/SpringSource/spring-scala
+
 `SpringConfigurer`
 -----
 
