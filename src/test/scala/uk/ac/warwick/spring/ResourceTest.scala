@@ -12,25 +12,31 @@ import org.springframework.beans.factory.annotation._
 
 class MyDependency(val name: String)
 
-class NamedDependency(val name: String)
+class NamedDependency(val name: String) {
+	def getName() = name
+}
 
 class WiredCommand {
-	import uk.ac.warwick.spring.Wiring._
 
-	val dep = autowired[MyDependency]
-	val dep2 = wired[NamedDependency]("coolBean")
+	val dep = Wire.auto[MyDependency]
+	val dep2 = Wire[NamedDependency]("coolBean")
 
+	val roger = Wire[String]("#{coolBean.name}")
+	val appName = Wire[String]("${app.name}")
+	
 	def makeSomeNoise() {
 		println("Dep name is " + dep.name)
 		println("Dep2 name is " + dep2.name)
 	}
 }
 
+class CommandWithValue {
+	val appName = Wire[String]("${app.name}")
+}
+
 package components {
 	class WiredCommand2 extends SpringConfigured {
-		import uk.ac.warwick.spring.Wiring._
-
-		val dep = autowired[MyDependency]
+		val dep = Wire.auto[MyDependency]
 	}
 }
 
@@ -40,6 +46,15 @@ class ResourceTest extends FunSuite {
 		useCtx("classpath:/test.xml") { ctx =>
 	  		val cmd = new WiredCommand()
 			cmd.makeSomeNoise()
+			cmd.roger should be ("Roger")
+			cmd.appName should be ("The best app in the world")
+		}
+	}
+
+	test("Placeholder values") {
+		useCtx("classpath:/test.xml") { ctx =>
+	  		val cmd = new CommandWithValue()
+			cmd.appName should be ("The best app in the world")
 		}
 	}
 
@@ -50,6 +65,7 @@ class ResourceTest extends FunSuite {
 	}
 
 	test("Missing context") {
+		Wire.ignoreMissingContext = false
 		evaluating { new WiredCommand() } should produce [IllegalStateException]
 	}
 
@@ -63,12 +79,12 @@ class ResourceTest extends FunSuite {
 
 	test("Ignore missing context") {
 		try {
-			Wiring.ignoreMissingContext = true
+			Wire.ignoreMissingContext = true
 			val cmd = new WiredCommand()
 			cmd.dep should be (null)
 			cmd.dep2 should be (null)
 		} finally {
-			Wiring.ignoreMissingContext = false
+			Wire.ignoreMissingContext = false
 		}
 	}
 
@@ -80,6 +96,10 @@ class ResourceTest extends FunSuite {
 	}
 
 	/** Use the given ClassPathXmlApplicationContext, ensuring it's closed after. */
-	def useCtx(path: String)(body: (ClassPathXmlApplicationContext)=>Unit) : Unit = useCtx(new ClassPathXmlApplicationContext(path))(body)
+	def useCtx(path: String)(body: (ClassPathXmlApplicationContext)=>Unit) : Unit = {
+		val ctx = new ClassPathXmlApplicationContext(path)
+		ctx.refresh()
+		useCtx(ctx)(body)
+	}
 
 }

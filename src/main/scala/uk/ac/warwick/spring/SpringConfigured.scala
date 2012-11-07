@@ -9,11 +9,17 @@ import org.springframework.beans.factory.annotation._
 /** Trait which mirrors the @Configurable attribute found in Spring.
   * After construction the object will be subject to wiring from the
   * Spring context if one is found.
+  *
+  * It's recommended to use the Wire class instead.
   */
 trait SpringConfigured {
 	SpringConfigurer.beanConfigurer.configureBean(this)
 }
 
+/** This class needs to be added to the application context that is to be used for wiring.
+  * It will store a reference to the context which other classes such as SpringConfigured
+  * and Wire can use for wiring.
+  */
 class SpringConfigurer extends ApplicationContextAware with InitializingBean with DisposableBean {
 	import SpringConfigurer._
 
