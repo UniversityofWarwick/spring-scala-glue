@@ -6,6 +6,7 @@ import org.springframework.context.expression._
 import org.springframework.beans.factory.support._
 import org.springframework.context._
 import collection.JavaConverters._
+import scala.reflect._
 
 /** Provides methods for wiring in resources from a Spring application context.
   *
@@ -29,8 +30,8 @@ object Wire {
 	  *
 	  * A missing app context is handled as per #getContext.
 	  */
-	def auto[T >: Null](implicit manifest: Manifest[T]): T = {
-		val clazz: Class[T] = manifest.erasure.asInstanceOf[Class[T]]
+	def auto[A >: Null : ClassTag]: A = {
+		val clazz: Class[A] = classTag[A].runtimeClass.asInstanceOf[Class[A]]
 		getContext match {
 			case Some(ctx) => {
 				val beans = for {
@@ -45,16 +46,21 @@ object Wire {
 		}
 	}
 
+	/**
+	 * Convenient shorthand for Wire.auto[A]
+	 */
+	def apply[A >: Null : ClassTag] = auto[A]
+
 	/** Convenient shorthand that will guess whether you are specifying a bean name
 	  * or a SpEL expression.
 	  */
-	def apply[T >: Null](string: String)(implicit manifest: Manifest[T]): T = {
+	def apply[A >: Null : ClassTag](string: String): A = {
 		if (string.startsWith("#{"))
-			value[T](string)
+			value[A](string)
 		else if (string.startsWith("${"))
-			property(string).asInstanceOf[T] // silly cast
+			property(string).asInstanceOf[A] // silly cast
 		else 
-			named[T](string)
+			named[A](string)
 	}
 
 	def property(expression: String): String = {
@@ -64,11 +70,11 @@ object Wire {
 		}
 	}
 
-	def value[T >: Null](expression: String)(implicit manifest: Manifest[T]): T = {
-		val clazz = manifest.erasure.asInstanceOf[Class[T]]
+	def value[A >: Null : ClassTag](expression: String): A = {
+		val clazz = classTag[A].runtimeClass.asInstanceOf[Class[A]]
 		getBeanFactory match {
 			case Some(factory) => resolver.evaluate(expression, new BeanExpressionContext(factory, null)) match {
-				case bean if clazz.isInstance(bean) => bean.asInstanceOf[T]
+				case bean if clazz.isInstance(bean) => bean.asInstanceOf[A]
 				case bean => throw new IllegalArgumentException("Bean expression '%s' resolves to object of type %s, expected %s".format(expression, bean.getClass, clazz))
 			}
 			case None => null
@@ -80,11 +86,11 @@ object Wire {
 	  * 
 	  * A missing app context is handled as per #getContext.
 	  */
-	def named[T >: Null](name: String)(implicit manifest: Manifest[T]) : T = {
-		val clazz = manifest.erasure.asInstanceOf[Class[T]]
+	def named[A >: Null : ClassTag](name: String) : A = {
+		val clazz = classTag[A].runtimeClass.asInstanceOf[Class[A]]
 		getContext match {
 			case Some(ctx) => ctx.getBean(name) match {
-					case bean: Any if clazz.isInstance(bean) => bean.asInstanceOf[T]
+					case bean: Any if clazz.isInstance(bean) => bean.asInstanceOf[A]
 					case bean => throw new IllegalArgumentException("Bean %s is of type %s, expected %s".format(name, bean.getClass, clazz))
 				}
 			case None => null

@@ -36,7 +36,7 @@ class CommandWithValue {
 
 package components {
 	class WiredCommand2 extends SpringConfigured {
-		val dep = Wire.auto[MyDependency]
+		val dep = Wire[MyDependency]
 	}
 }
 

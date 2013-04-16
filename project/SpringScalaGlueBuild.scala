@@ -12,7 +12,7 @@ object SpringScalaGlueBuild extends Build {
     settings = Project.defaultSettings ++ Seq(
       name := "spring-scala-glue",
       organization := "uk.ac.warwick",
-      version := "1.0",
+      version := "1.1",
       scalaVersion := "2.10.0",
       libraryDependencies ++= Seq(
       	spring % "spring-beans" % springVersion,
