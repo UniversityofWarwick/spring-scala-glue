@@ -1,11 +1,14 @@
 package uk.ac.warwick.spring
 
-import org.springframework.beans.factory.config.BeanExpressionContext
-import org.springframework.beans.factory.config.TypedStringValue
-import org.springframework.context.expression._
-import org.springframework.beans.factory.support._
+import org.springframework.beans.SimpleTypeConverter
 import org.springframework.beans.factory._
+import org.springframework.beans.factory.config._
+import org.springframework.beans.factory.support._
 import org.springframework.context._
+import org.springframework.context.expression._
+import org.springframework.core.convert.ConversionService
+import org.springframework.core.env._
+import org.springframework.util.StringValueResolver
 import collection.JavaConverters._
 import scala.reflect._
 
@@ -80,7 +83,7 @@ object Wire {
 		if (string.startsWith("#{"))
 			value[A](string)
 		else if (string.startsWith("${"))
-			property(string).asInstanceOf[A] // silly cast
+			convertTo[A](property(string))
 		else 
 			named[A](string)
 
@@ -88,11 +91,33 @@ object Wire {
 		if (string.startsWith("#{"))
 			optionValue[A](string)
 		else if (string.startsWith("${"))
-			optionProperty(string).asInstanceOf[Option[A]] // silly cast
+			optionProperty(string) map { p => convertTo[A](p) }
 		else 
 			optionNamed[A](string)
 
-	def property(expression: String): String = (getBeanFactory map { _.resolveEmbeddedValue(expression) }).orNull
+	def convertTo[A >: Null : ClassTag](string: String): A = classTag[A] match {
+		case t if t <:< classTag[String] => string.asInstanceOf[A]
+		case t => {
+			val converter = new SimpleTypeConverter
+			option[ConversionService] map { cs => converter.setConversionService(cs) }
+
+			converter.convertIfNecessary(string, t.runtimeClass).asInstanceOf[A] // silly cast
+		}
+	}
+
+	def property(expression: String): String = getBeanFactory match {
+		case Some(factory) => factory.resolveEmbeddedValue(expression)
+		case _ => {
+			// Default behaviour - if there is a default in the property, we should return that
+			val propertyResolver = new PropertySourcesPropertyResolver(new MutablePropertySources)
+
+			propertyResolver.setPlaceholderPrefix(PlaceholderConfigurerSupport.DEFAULT_PLACEHOLDER_PREFIX)
+			propertyResolver.setPlaceholderSuffix(PlaceholderConfigurerSupport.DEFAULT_PLACEHOLDER_SUFFIX)
+			propertyResolver.setValueSeparator(PlaceholderConfigurerSupport.DEFAULT_VALUE_SEPARATOR)
+
+			propertyResolver.resolvePlaceholders(expression)
+		}
+	}
 
 	def optionProperty(expression: String): Option[String] =
 		getBeanFactory flatMap { factory =>

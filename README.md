@@ -39,6 +39,10 @@ In the below examples you could use `var` instead of `val` if you prefer, and ev
     val replyAddress = Wire.property("${email.reply.to}")
     val replyAddress = Wire.required[String]("${email.reply.to}")
 
+    // Placeholder property with a default value (note the type needing to be nullable, hence using java.lang.Boolean instead of scala Boolean)
+    // Even if there is no context available, this will never return null
+    val featureEnabled = Wire[java.lang.Boolean]("${feature.enabled:false}").booleanValue()
+
     // Optional wiring by type or property
     val replyAddress = Wire.option[String]("${email.reply.to}") // returns an Option[String]
     val userService = Wire.option[UserService] // returns an Option[UserService]

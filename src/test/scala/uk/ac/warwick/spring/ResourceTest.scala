@@ -32,6 +32,9 @@ class WiredCommand {
 	val optPropMissing = Wire.option[String]("${app.blahblah}")
 	val optValueMissing = Wire.optionValue[String]("#{coolBean.blahblah}")
 	val optPropertyMissing = Wire.optionProperty("${app.blahblah}")
+
+	val feature = Wire[java.lang.Boolean]("${feature.enabled:false}")
+	val otherFeature = Wire[java.lang.Boolean]("${feature.another:true}")
 	
 	def makeSomeNoise() {
 		println("Dep name is " + dep.name)
@@ -66,6 +69,8 @@ class ResourceTest extends FunSuite {
 			cmd.optNamedMissing should be ('empty)
 			cmd.optPropertyMissing should be ('empty)
 			cmd.optValueMissing should be ('empty)
+			cmd.feature.booleanValue() should be (true)
+			cmd.otherFeature.booleanValue() should be (true)
 		}
 	}
 
@@ -108,6 +113,10 @@ class ResourceTest extends FunSuite {
 			cmd.optNamedMissing should be ('empty)
 			cmd.optPropertyMissing should be ('empty)
 			cmd.optValueMissing should be ('empty)
+
+			// Fall back to default
+			cmd.feature.booleanValue() should be (false)
+			cmd.otherFeature.booleanValue() should be (true)
 		} finally {
 			Wire.ignoreMissingContext = false
 		}
