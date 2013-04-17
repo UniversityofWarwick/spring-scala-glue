@@ -34,15 +34,28 @@ object Wire {
 		val clazz: Class[A] = classTag[A].runtimeClass.asInstanceOf[Class[A]]
 		getContext match {
 			case Some(ctx) => {
-				val beans = for {
-					(name, bean) <- ctx.getBeansOfType(clazz).asScala
-					if ctx.getBeanFactory.getBeanDefinition(name).isAutowireCandidate
-				} yield bean
+				val beans = all[A]
 				if (beans.isEmpty) throw new IllegalArgumentException("No bean of %s".format(clazz))
 				else if (beans.size > 1) throw new IllegalArgumentException("Ambiguous search for %s - there were %d matching beans".format(clazz, beans.size))
 				else beans.head
 			}
 			case None => null
+		}
+	}
+
+	/**
+	 * Returns all beans of type A
+	 */
+	def all[A >: Null : ClassTag]: Seq[A] = {
+		val clazz = classTag[A].runtimeClass.asInstanceOf[Class[A]]
+		getContext match {
+			case Some(ctx) => {
+				for {
+					(name, bean) <- ctx.getBeansOfType(clazz).asScala.toSeq
+					if ctx.getBeanFactory.getBeanDefinition(name).isAutowireCandidate
+				} yield bean
+			}
+			case None => Seq()
 		}
 	}
 

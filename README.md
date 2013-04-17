@@ -21,7 +21,11 @@ In the below examples you could use `var` instead of `val` if you prefer, and ev
 (which can be useful to avoid circular dependency issues that would normally affect constructor autowiring)
 
     // Autowire by type
-    val userService = Wire.auto[UserService]
+		val userService = Wire[UserService]
+		val userSercice = Wire.auto[UserService]
+
+		// Wire all instances of this type to a Seq[Provider]
+		val providers = Wire.all[Provider]
 
     // Wire by name
     val dataSource = Wire[DataSource]("centralDataRepo")

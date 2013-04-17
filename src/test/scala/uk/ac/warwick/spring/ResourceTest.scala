@@ -20,6 +20,7 @@ class WiredCommand {
 
 	val dep = Wire.auto[MyDependency]
 	val dep2 = Wire[NamedDependency]("coolBean")
+	val depSeq = Wire.all[MyDependency]
 
 	val roger = Wire[String]("#{coolBean.name}")
 	val appName = Wire[String]("${app.name}")
@@ -27,6 +28,7 @@ class WiredCommand {
 	def makeSomeNoise() {
 		println("Dep name is " + dep.name)
 		println("Dep2 name is " + dep2.name)
+		println("DepSeq names aare " + (depSeq map { _.name } mkString))
 	}
 }
 
@@ -83,6 +85,7 @@ class ResourceTest extends FunSuite {
 			val cmd = new WiredCommand()
 			cmd.dep should be (null)
 			cmd.dep2 should be (null)
+			cmd.depSeq should be ('empty)
 		} finally {
 			Wire.ignoreMissingContext = false
 		}
