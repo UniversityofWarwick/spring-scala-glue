@@ -21,14 +21,23 @@ class WiredCommand {
 	val dep = Wire.auto[MyDependency]
 	val dep2 = Wire[NamedDependency]("coolBean")
 	val depSeq = Wire.all[MyDependency]
+	val optDep = Wire.option[MyDependency]
+	val optDepMissing = Wire.option[BeanConfigurerSupport]
+	val optNamedMissing = Wire.optionNamed[NamedDependency]("coolBeansFace")
 
 	val roger = Wire[String]("#{coolBean.name}")
 	val appName = Wire[String]("${app.name}")
+	val appNameOpt = Wire.option[String]("${app.name}")
+
+	val optPropMissing = Wire.option[String]("${app.blahblah}")
+	val optValueMissing = Wire.optionValue[String]("#{coolBean.blahblah}")
+	val optPropertyMissing = Wire.optionProperty("${app.blahblah}")
 	
 	def makeSomeNoise() {
 		println("Dep name is " + dep.name)
 		println("Dep2 name is " + dep2.name)
-		println("DepSeq names aare " + (depSeq map { _.name } mkString))
+		println("DepSeq names are " + (depSeq map { _.name } mkString))
+		println("optDep name is " + optDep.get.name)
 	}
 }
 
@@ -50,6 +59,13 @@ class ResourceTest extends FunSuite {
 			cmd.makeSomeNoise()
 			cmd.roger should be ("Roger")
 			cmd.appName should be ("The best app in the world")
+			cmd.appNameOpt should be (Some("The best app in the world"))
+			cmd.optDep should be ('defined)
+			cmd.optDepMissing should be ('empty)
+			cmd.optPropMissing should be ('empty)
+			cmd.optNamedMissing should be ('empty)
+			cmd.optPropertyMissing should be ('empty)
+			cmd.optValueMissing should be ('empty)
 		}
 	}
 
@@ -86,6 +102,12 @@ class ResourceTest extends FunSuite {
 			cmd.dep should be (null)
 			cmd.dep2 should be (null)
 			cmd.depSeq should be ('empty)
+			cmd.optDep should be ('empty)
+			cmd.optDepMissing should be ('empty)
+			cmd.optPropMissing should be ('empty)
+			cmd.optNamedMissing should be ('empty)
+			cmd.optPropertyMissing should be ('empty)
+			cmd.optValueMissing should be ('empty)
 		} finally {
 			Wire.ignoreMissingContext = false
 		}

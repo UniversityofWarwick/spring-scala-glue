@@ -20,12 +20,13 @@ other magic - they are simply methods that resolve beans.
 In the below examples you could use `var` instead of `val` if you prefer, and even a `lazy val`
 (which can be useful to avoid circular dependency issues that would normally affect constructor autowiring)
 
-    // Autowire by type
-		val userService = Wire[UserService]
-		val userSercice = Wire.auto[UserService]
+    // Autowire by type, all three of these are equivalent
+	val userService = Wire[UserService]
+	val userService = Wire.auto[UserService]
+    val userSerivce = Wire.required[UserService]
 
-		// Wire all instances of this type to a Seq[Provider]
-		val providers = Wire.all[Provider]
+	// Wire all instances of this type to a Seq[Provider]
+	val providers = Wire.all[Provider]
 
     // Wire by name
     val dataSource = Wire[DataSource]("centralDataRepo")
@@ -36,6 +37,11 @@ In the below examples you could use `var` instead of `val` if you prefer, and ev
     // Placeholder property
     val replyAddress = Wire[String]("${email.reply.to}")
     val replyAddress = Wire.property("${email.reply.to}")
+    val replyAddress = Wire.required[String]("${email.reply.to}")
+
+    // Optional wiring by type or property
+    val replyAddress = Wire.option[String]("${email.reply.to}") // returns an Option[String]
+    val userService = Wire.option[UserService] // returns an Option[UserService]
 
 By default, if the ApplicationContext is missing then the wiring methods will quietly return null. This
 is similar to what the wiring annotations will do - in their case they just don't set a value, but usually
@@ -52,8 +58,10 @@ over how things are wired.
 New things we could add
 ------------
 
-- `Wire` methods could add support for not-required dependencies by returning an Option of the bean.
 - `Wire.property` shouldn't require `${}` around the string
 - `Wire.value` shouldn't require `#{}` around the string
-- Investigate compatibility with native Scala getters/setters and collections. This is likely to be difficult to do in a library since Spring's BeanWrapperImpl is hardwired to Java style bean properties, and similarly most of Spring assumes all collections to implement interfaces in the Java Collection API.
-  - Spring 3.2 and this project may sort out these issues: https://github.com/SpringSource/spring-scala
+
+Compatibility with native Scala getters/setters
+------------
+
+Not included in this project - Spring 3.2 and this project sort out these issues: https://github.com/SpringSource/spring-scala
