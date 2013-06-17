@@ -4,11 +4,13 @@
   <!-- Maven does not like us defining artifactId with a variable. If it breaks
        in a future Maven, I guess it should be a fixed string. -->
   <artifactId>spring-scala-glue_${scala.major.version}</artifactId>
-  <version>1.4</version>
+  <version>1.5</version>
   <name>${project.artifactId}</name>
   <description>Spring Scala Glue</description>
   <inceptionYear>2013</inceptionYear>
 
+  <!-- TODO this parent makes it hard for anyone else to build this project since
+    it is an internal dependency. Some way to make it optional? -->
   <parent>
     <groupId>uk.ac.warwick</groupId>
     <artifactId>warwick</artifactId>
