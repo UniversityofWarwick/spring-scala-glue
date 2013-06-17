@@ -28,6 +28,12 @@ object Wire {
 	  */
 	var ignoreMissingContext = true
 
+	/** Setting this to true will cause Wire to return null for beans that aren't found, even if
+	  * an application context is present. This is to be used sparingly in tests, where some wiring is
+	  * required but not all dependencies need to be wired in from context.
+	  */
+	var ignoreMissingBeans = false
+
 	/** Returns a bean of this type. Throws an exception if there are 0 matching beans
 	  * or more than one matching bean. In the latter case you may want to use the alternative
 	  * method that takes a bean name.
@@ -35,15 +41,20 @@ object Wire {
 	  * A missing app context is handled as per #getContext.
 	  */
 	def auto[A >: Null : ClassTag]: A = {
-		val clazz: Class[A] = classTag[A].runtimeClass.asInstanceOf[Class[A]]
-		getContext match {
-			case Some(_) => option[A] match {
-				case Some(bean) => bean
-				case _ => throw new IllegalArgumentException("No bean of %s".format(clazz))
+		if (ignoreMissingBeans) {
+			option[A].orNull
+		} else {
+			val clazz: Class[A] = classTag[A].runtimeClass.asInstanceOf[Class[A]]
+			getContext match {
+				case Some(_) => option[A] match {
+					case Some(bean) => bean
+					case _ => throw new IllegalArgumentException("No bean of %s".format(clazz))
+				}
+				case None => null
 			}
-			case None => null
 		}
 	}
+
 	def option[A >: Null : ClassTag]: Option[A] = {
 		val clazz: Class[A] = classTag[A].runtimeClass.asInstanceOf[Class[A]]
 		getContext flatMap { context =>
@@ -129,13 +140,17 @@ object Wire {
 		}
 
 	def value[A >: Null : ClassTag](expression: String): A = {
-		val clazz = classTag[A].runtimeClass.asInstanceOf[Class[A]]
-		getBeanFactory match {
-			case Some(factory) => resolver.evaluate(expression, new BeanExpressionContext(factory, null)) match {
-				case bean if clazz.isInstance(bean) => bean.asInstanceOf[A]
-				case bean => throw new IllegalArgumentException("Bean expression '%s' resolves to object of type %s, expected %s".format(expression, bean.getClass, clazz))
+		if (ignoreMissingBeans) {
+			optionValue[A](expression).orNull
+		} else {
+			val clazz = classTag[A].runtimeClass.asInstanceOf[Class[A]]
+			getBeanFactory match {
+				case Some(factory) => resolver.evaluate(expression, new BeanExpressionContext(factory, null)) match {
+					case bean if clazz.isInstance(bean) => bean.asInstanceOf[A]
+					case bean => throw new IllegalArgumentException("Bean expression '%s' resolves to object of type %s, expected %s".format(expression, bean.getClass, clazz))
+				}
+				case None => null
 			}
-			case None => null
 		}
 	}
 
@@ -159,14 +174,18 @@ object Wire {
 	  * A missing app context is handled as per #getContext.
 	  */
   	def named[A >: Null : ClassTag](name: String): A = {
-		val clazz = classTag[A].runtimeClass.asInstanceOf[Class[A]]
-		getContext match {
-			case Some(ctx) => ctx.getBean(name) match {
-				case bean: Any if clazz.isInstance(bean) => bean.asInstanceOf[A]
-				case bean => throw new IllegalArgumentException("Bean %s is of type %s, expected %s".format(name, bean.getClass, clazz))
+  		if (ignoreMissingBeans) {
+  			optionNamed[A](name).orNull
+  		} else {
+			val clazz = classTag[A].runtimeClass.asInstanceOf[Class[A]]
+			getContext match {
+				case Some(ctx) => ctx.getBean(name) match {
+					case bean: Any if clazz.isInstance(bean) => bean.asInstanceOf[A]
+					case bean => throw new IllegalArgumentException("Bean %s is of type %s, expected %s".format(name, bean.getClass, clazz))
+				}
+				case None => null
 			}
-			case None => null
-		} 
+		}
 	}
 
 	def optionNamed[A >: Null : ClassTag](name: String) : Option[A] = {

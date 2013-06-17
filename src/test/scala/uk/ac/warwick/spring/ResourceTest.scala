@@ -44,6 +44,12 @@ class WiredCommand {
 	}
 }
 
+class WiredCommand3 {
+	val dep = Wire[NamedDependency]("coolBean")
+	val dep2 = Wire[NamedDependency]("madeUpBean")
+	val integers = Wire.all[java.lang.Integer]
+}
+
 class CommandWithValue {
 	val appName = Wire[String]("${app.name}")
 }
@@ -119,6 +125,20 @@ class ResourceTest extends FunSuite {
 			cmd.otherFeature.booleanValue() should be (true)
 		} finally {
 			Wire.ignoreMissingContext = false
+		}
+	}
+
+	test("Ignore missing beans") {
+		useCtx("classpath:/test.xml") { ctx =>
+			try {
+				Wire.ignoreMissingBeans = true
+				val bean = new WiredCommand3()
+				bean.dep.name should be ("Roger")
+				bean.dep2 should be (null)
+				bean.integers should be (Nil)
+			} finally {
+				Wire.ignoreMissingBeans = false
+			}
 		}
 	}
 

@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation._
 
 class Beeper {
 	def beep() { println("beep!") }
+  def beepToString()={"beep!"}
 }
 
 class MyCommand extends SpringConfigured {
