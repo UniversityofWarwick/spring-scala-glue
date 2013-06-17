@@ -1,12 +1,16 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>uk.ac.warwick</groupId>
+  <!-- Maven does not like us defining artifactId with a variable. If it breaks
+       in a future Maven, I guess it should be a fixed string. -->
   <artifactId>spring-scala-glue_${scala.major.version}</artifactId>
-  <version>1.4</version>
+  <version>1.5</version>
   <name>${project.artifactId}</name>
   <description>Spring Scala Glue</description>
   <inceptionYear>2013</inceptionYear>
 
+  <!-- TODO this parent makes it hard for anyone else to build this project since
+    it is an internal dependency. Some way to make it optional? -->
   <parent>
     <groupId>uk.ac.warwick</groupId>
     <artifactId>warwick</artifactId>
@@ -48,6 +52,13 @@
       <version>2.0.M6-SNAP20</version>
       <scope>test</scope>
     </dependency>
+    <dependency>
+       <groupId>org.mockito</groupId>
+       <artifactId>mockito-all</artifactId>
+       <version>1.9.5</version>
+       <scope>test</scope>
+   </dependency>
+
   </dependencies>
 
   <build>
@@ -75,23 +86,39 @@
           </execution>
         </executions>
       </plugin>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <version>2.6</version>
-        <configuration>
-          <useFile>false</useFile>
-          <disableXmlReport>true</disableXmlReport>
-          <!-- If you have classpath issue like NoDefClassError,... -->
-          <!-- useManifestOnlyJar>false</useManifestOnlyJar -->
-          <includes>
-            <include>**/*Test.*</include>
-            <include>**/*Suite.*</include>
-          </includes>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
+
+
+<!-- scalatest plugin config: see   http://www.scalatest.org/user_guide/using_the_scalatest_maven_plugin -->
+<!-- disable surefire -->
+<plugin>
+  <groupId>org.apache.maven.plugins</groupId>
+  <artifactId>maven-surefire-plugin</artifactId>
+  <version>2.6</version>
+  <configuration>
+    <skipTests>true</skipTests>
+  </configuration>
+</plugin>
+<!-- enable scalatest -->
+<plugin>
+  <groupId>org.scalatest</groupId>
+  <artifactId>maven-scalatest-plugin</artifactId>
+  <version>1.0-SNAPSHOT</version>
+  <configuration>
+    <reportsDirectory>${project.build.directory}/surefire-reports</reportsDirectory>
+    <junitxml>.</junitxml>
+    <filereports>WDF TestSuite.txt</filereports>
+  </configuration>
+  <executions>
+    <execution>
+      <id>test</id>
+      <goals>
+        <goal>test</goal>
+      </goals>
+    </execution>
+  </executions>
+</plugin>
+</plugins>
+</build>
 
   <repositories>
     <repository>
