@@ -1,8 +1,10 @@
+package uk.ac.warwick.spring
+
 import org.scalatest.FunSuite
-import org.scalatest.mock.MockitoSugar
-import org.scalatest.matchers.ShouldMatchers._
+import org.scalatest.Matchers._
 import org.springframework.context.support.ClassPathXmlApplicationContext
-import uk.ac.warwick.spring.Beeper
+import org.scalatest.mockito.MockitoSugar
+import org.mockito.Mockito._
 
 class WiredComponentTest extends FunSuite {
 
@@ -21,16 +23,14 @@ class WiredComponentTest extends FunSuite {
 
 }
 
-class SomeServiceProviderSpringImpl extends SomeServiceProvider with SpringAppContextProvider  {
+class SomeServiceProviderSpringImpl extends SomeServiceProvider with SpringAppContextProvider {
   val service = new SomeService
 }
 
 class SomeServiceProviderMockImpl extends SomeServiceProvider with AppContextProvider with MockitoSugar {
-  import org.mockito.Mockito.when
-
-  val beeper = mock[Beeper]
+  val beeper: Beeper = mock[Beeper]
   when(beeper.beepToString()).thenReturn("meep!")
-  val context = mock[DependencyResolver]
+  val context: DependencyResolver = mock[DependencyResolver]
 
   when(context.wire[Beeper]).thenReturn(beeper)
   val service = new SomeService
@@ -41,8 +41,8 @@ trait SomeServiceProvider {
   this:AppContextProvider =>
 
   class SomeService {
-    val beeper = context.wire[Beeper]
-    def speak = beeper.beepToString()
+    val beeper: Beeper = context.wire[Beeper]
+    def speak: String = beeper.beepToString()
   }
 }
 

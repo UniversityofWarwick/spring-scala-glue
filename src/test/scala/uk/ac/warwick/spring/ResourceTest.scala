@@ -1,70 +1,63 @@
 package uk.ac.warwick.spring
 
+import java.lang
+
+import org.scalatest.Matchers._
 import org.scalatest._
-import org.scalatest.matchers.ShouldMatchers._
-
-import org.springframework.context.support._
-
-import org.springframework.context._
-import org.springframework.beans.factory.wiring.BeanConfigurerSupport
 import org.springframework.beans.factory._
-import org.springframework.beans.factory.annotation._
+import org.springframework.beans.factory.wiring.BeanConfigurerSupport
+import org.springframework.context._
+import org.springframework.context.support._
 
 class MyDependency(val name: String)
 
 class NamedDependency(val name: String) {
-	def getName() = name
+	def getName: String = name
 }
 
 class WiredCommand {
 
-	val dep = Wire.auto[MyDependency]
-	val dep2 = Wire[NamedDependency]("coolBean")
-	val depSeq = Wire.all[MyDependency]
-	val optDep = Wire.option[MyDependency]
-	val optDepMissing = Wire.option[BeanConfigurerSupport]
-	val optNamedMissing = Wire.optionNamed[NamedDependency]("coolBeansFace")
+	val dep: MyDependency = Wire.auto[MyDependency]
+	val dep2: NamedDependency = Wire[NamedDependency]("coolBean")
+	val depSeq: Seq[MyDependency] = Wire.all[MyDependency]
+	val optDep: Option[MyDependency] = Wire.option[MyDependency]
+	val optDepMissing: Option[BeanConfigurerSupport] = Wire.option[BeanConfigurerSupport]
+	val optNamedMissing: Option[NamedDependency] = Wire.optionNamed[NamedDependency]("coolBeansFace")
 
-	val roger = Wire[String]("#{coolBean.name}")
-	val appName = Wire[String]("${app.name}")
-	val appNameOpt = Wire.option[String]("${app.name}")
+	val roger: String = Wire[String]("#{coolBean.name}")
+	val appName: String = Wire[String]("${app.name}")
+	val appNameOpt: Option[String] = Wire.option[String]("${app.name}")
 
-	val optPropMissing = Wire.option[String]("${app.blahblah}")
-	val optValueMissing = Wire.optionValue[String]("#{coolBean.blahblah}")
-	val optPropertyMissing = Wire.optionProperty("${app.blahblah}")
+	val optPropMissing: Option[String] = Wire.option[String]("${app.blahblah}")
+	val optValueMissing: Option[String] = Wire.optionValue[String]("#{coolBean.blahblah}")
+	val optPropertyMissing: Option[String] = Wire.optionProperty("${app.blahblah}")
 
-	val feature = Wire[java.lang.Boolean]("${feature.enabled:false}")
-	val otherFeature = Wire[java.lang.Boolean]("${feature.another:true}")
+	val feature: lang.Boolean = Wire[java.lang.Boolean]("${feature.enabled:false}")
+	val otherFeature: lang.Boolean = Wire[java.lang.Boolean]("${feature.another:true}")
 	
 	def makeSomeNoise() {
 		println("Dep name is " + dep.name)
 		println("Dep2 name is " + dep2.name)
-		println("DepSeq names are " + (depSeq map { _.name } mkString))
+		println("DepSeq names are " + depSeq.map { _.name }.mkString)
 		println("optDep name is " + optDep.get.name)
 	}
 }
 
 class WiredCommand3 {
-	val dep = Wire[NamedDependency]("coolBean")
-	val dep2 = Wire[NamedDependency]("madeUpBean")
-	val integers = Wire.all[java.lang.Integer]
+	val dep: NamedDependency = Wire[NamedDependency]("coolBean")
+	val dep2: NamedDependency = Wire[NamedDependency]("madeUpBean")
+	val integers: Seq[Integer] = Wire.all[java.lang.Integer]
 }
 
 class CommandWithValue {
-	val appName = Wire[String]("${app.name}")
-}
-
-package components {
-	class WiredCommand2 extends SpringConfigured {
-		val dep = Wire[MyDependency]
-	}
+	val appName: String = Wire[String]("${app.name}")
 }
 
 class ResourceTest extends FunSuite {
 
 	test("Command should be autowired from bean") {
 		useCtx("classpath:/test.xml") { ctx =>
-	  		val cmd = new WiredCommand()
+	  	val cmd = new WiredCommand()
 			cmd.makeSomeNoise()
 			cmd.roger should be ("Roger")
 			cmd.appName should be ("The best app in the world")
@@ -82,28 +75,28 @@ class ResourceTest extends FunSuite {
 
 	test("Placeholder values") {
 		useCtx("classpath:/test.xml") { ctx =>
-	  		val cmd = new CommandWithValue()
+	  	val cmd = new CommandWithValue()
 			cmd.appName should be ("The best app in the world")
 		}
 	}
 
 	test("Command is missing dependencies") {
 		useCtx("classpath:/test2.xml") { ctx =>
-  			evaluating {  new WiredCommand() } should produce [IllegalArgumentException]
-  		}
+			an[IllegalArgumentException] should be thrownBy { new WiredCommand() }
+		}
 	}
 
 	test("Missing context") {
 		Wire.ignoreMissingContext = false
-		evaluating { new WiredCommand() } should produce [IllegalStateException]
+		an[IllegalStateException] should be thrownBy { new WiredCommand() }
 	}
 
 	test("Multiple candidates") {
-		evaluating {
+		a[BeanCreationException] should be thrownBy {
 			useCtx("classpath:/test3.xml") { ctx =>
-				fail("Shouldn't have successfully created context")			
+				fail("Shouldn't have successfully created context")
 			}
-		} should produce [BeanCreationException]
+		}
 	}
 
 	test("Ignore missing context") {
@@ -157,3 +150,7 @@ class ResourceTest extends FunSuite {
 	}
 
 }
+
+class WiredCommand2 extends SpringConfigured {
+		val dep: MyDependency = Wire[MyDependency]
+	}

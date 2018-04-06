@@ -21,7 +21,7 @@
     <constructor-arg value="Jenny" />
   </bean>
 
-  <bean class="uk.ac.warwick.spring.components.WiredCommand2" />
+  <bean class="uk.ac.warwick.spring.WiredCommand2" />
 
   <!-- more bean definitions for services go here -->
 

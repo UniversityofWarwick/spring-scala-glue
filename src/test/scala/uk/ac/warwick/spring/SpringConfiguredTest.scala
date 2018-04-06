@@ -1,16 +1,12 @@
 package uk.ac.warwick.spring
 
 import org.scalatest._
-
+import org.springframework.beans.factory.annotation._
 import org.springframework.context.support._
 
-import org.springframework.beans.factory.wiring.BeanConfigurerSupport
-import org.springframework.beans.factory._
-import org.springframework.beans.factory.annotation._
-
 class Beeper {
-	def beep() { println("beep!") }
-  def beepToString()={"beep!"}
+	def beep(): Unit = { println("beep!") }
+  def beepToString(): String ={"beep!"}
 }
 
 class MyCommand extends SpringConfigured {
