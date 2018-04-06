@@ -1,6 +1,6 @@
 name := "spring-scala-glue"
 organization := "uk.ac.warwick"
-version := "1.5"
+version := "1.7"
 scalaVersion := "2.12.5"
 crossScalaVersions := Seq("2.11.11", "2.12.5")
 
