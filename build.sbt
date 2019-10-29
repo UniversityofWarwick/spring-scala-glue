@@ -1,8 +1,8 @@
 name := "spring-scala-glue"
 organization := "uk.ac.warwick"
-version := "1.8-SNAPSHOT"
-scalaVersion := "2.13.0-M5"
-crossScalaVersions := Seq("2.11.12", "2.12.8", "2.13.0-M5")
+version := "1.8"
+scalaVersion := "2.13.1"
+crossScalaVersions := Seq("2.11.12", "2.12.9", "2.13.1")
 
 val spring = "org.springframework"
 val springVersion = "4.3.0.RELEASE"
@@ -24,7 +24,7 @@ lazy val root = (project in file("."))
       spring % "spring-beans" % springVersion,
       spring % "spring-context" % springVersion,
 
-      "org.scalatest" %% "scalatest" % "3.0.6-SNAP6" % "test",
+      "org.scalatest" %% "scalatest" % "3.0.8" % "test",
       "org.mockito" % "mockito-all" % "1.10.19" % "test"
     ),
     credentials += Credentials(Path.userHome / ".ivy2" / ".credentials"),
